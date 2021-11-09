@@ -1,98 +1,85 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2019 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
+ * This is a sample program showing the use of the solenoid classes during operator control. Three
+ * buttons from a joystick will be used to control two solenoids: One button to control the position
+ * of a single solenoid and the other two buttons to control a double solenoid. Single solenoids can
+ * either be on or off, such that the air diverted through them goes through either one channel or
+ * the other. Double solenoids have three states: Off, Forward, and Reverse. Forward and Reverse
+ * divert the air through the two channels and correspond to the on and off of a single solenoid,
+ * but a double solenoid can also be "off", where the solenoid will remain in its default power off
+ * state. Additionally, double solenoids take up two channels on your PCM whereas single solenoids
+ * only take a single channel.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final Joystick m_stick = new Joystick(0);
 
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  @Override
-  public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
-  }
+  // Compressor object on CAN ID 0
+  private final Compressor c = new Compressor(0);
 
-  /**
-   * This function is called every robot packet, no matter the mode. Use this for items like
-   * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {}
+  // DoubleSolenoid corresponds to a double solenoid.
+  private final DoubleSolenoid m_solenoidSmall =
+      new DoubleSolenoid(4, 5);
+        // DoubleSolenoid corresponds to a double solenoid.
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
-  @Override
-  public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
-  }
+  private final DoubleSolenoid m_solenoidMedium =
+      new DoubleSolenoid(0, 1);
+        // DoubleSolenoid corresponds to a double solenoid.
 
-  /** This function is called periodically during autonomous. */
+  private final DoubleSolenoid m_solenoidLarge =
+      new DoubleSolenoid(2, 3);
+
+  // Button ID's for each solenoid
+  private static final int kSolenoidSmallForward = 5;
+  private static final int kSolenoidSmallReverse = 6;
+  
+  private static final int kSolenoidMedium = 4;
+  
+  private static final int kSolenoidLargeForward = 1;
+  private static final int kSolenoidLargeReverse = 2;
+
+
+
   @Override
-  public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
+  public void teleopPeriodic() {
+    /*
+     * The output of GetRawButton is true/false depending on whether
+     * the button is pressed; Set takes a boolean for whether
+     * to use the default (false) channel or the other (true).
+     *
+     * In order to set the double solenoid, if just one button
+     * is pressed, set the solenoid to correspond to that button.
+     * If both are pressed, set the solenoid will be set to Forwards.
+     */
+    c.setClosedLoopControl(true);
+    if (m_stick.getRawButton(kSolenoidSmallForward)) {
+      m_solenoidSmall.set(DoubleSolenoid.Value.kForward);
+    } else if (m_stick.getRawButton(kSolenoidSmallReverse)) {
+      m_solenoidSmall.set(DoubleSolenoid.Value.kReverse);
+    }
+
+    if (m_stick.getRawButtonPressed(kSolenoidMedium)) {
+      m_solenoidMedium.set(DoubleSolenoid.Value.kForward);
+    } else if (m_stick.getRawButtonReleased(kSolenoidMedium)){
+      m_solenoidMedium.set(DoubleSolenoid.Value.kReverse);
+    }
+
+    if (m_stick.getRawButton(kSolenoidLargeForward)) {
+      m_solenoidLarge.set(DoubleSolenoid.Value.kForward);
+    } else if (m_stick.getRawButton(kSolenoidLargeReverse)) {
+      m_solenoidLarge.set(DoubleSolenoid.Value.kReverse);
     }
   }
-
-  /** This function is called once when teleop is enabled. */
-  @Override
-  public void teleopInit() {}
-
-  /** This function is called periodically during operator control. */
-  @Override
-  public void teleopPeriodic() {}
-
-  /** This function is called once when the robot is disabled. */
-  @Override
-  public void disabledInit() {}
-
-  /** This function is called periodically when disabled. */
-  @Override
-  public void disabledPeriodic() {}
-
-  /** This function is called once when test mode is enabled. */
-  @Override
-  public void testInit() {}
-
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
 }
