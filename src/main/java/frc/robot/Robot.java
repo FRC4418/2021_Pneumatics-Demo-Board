@@ -24,62 +24,61 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * only take a single channel.
  */
 public class Robot extends TimedRobot {
-  private final Joystick m_stick = new Joystick(0);
+	private final Joystick m_stick = new Joystick(0);
 
-  // Compressor object on CAN ID 0
-  private final Compressor c = new Compressor(0);
+	// Compressor object on CAN ID 0
+	private final Compressor compressor = new Compressor(0);
 
-  // DoubleSolenoid corresponds to a double solenoid.
-  private final DoubleSolenoid m_solenoidSmall =
-      new DoubleSolenoid(4, 5);
-        // DoubleSolenoid corresponds to a double solenoid.
+	// DoubleSolenoid corresponds to a double solenoid.
+	private final DoubleSolenoid m_smallSolenoid =
+		new DoubleSolenoid(4, 5);
+			// DoubleSolenoid corresponds to a double solenoid.
 
-  private final DoubleSolenoid m_solenoidMedium =
-      new DoubleSolenoid(0, 1);
-        // DoubleSolenoid corresponds to a double solenoid.
+	private final DoubleSolenoid m_mediumSolenoid =
+		new DoubleSolenoid(0, 1);
+			// DoubleSolenoid corresponds to a double solenoid.
 
-  private final DoubleSolenoid m_solenoidLarge =
-      new DoubleSolenoid(2, 3);
+	private final DoubleSolenoid m_largeSolenoid =
+		new DoubleSolenoid(2, 3);
 
-  // Button ID's for each solenoid
-  private static final int kSolenoidSmallForward = 5;
-  private static final int kSolenoidSmallReverse = 6;
-  
-  private static final int kSolenoidMedium = 4;
-  
-  private static final int kSolenoidLargeForward = 1;
-  private static final int kSolenoidLargeReverse = 2;
+	// Button ID's for each solenoid
+	private static final int SMALL_SOLENOID_FORWARD_BUTTON_ID = 5;
+	private static final int SMALL_SOLENOID_REVERSE_BUTTON_ID = 6;
+	
+	private static final int MEDIUM_SOLENOID_BUTTON_ID = 4;
+	
+	private static final int LARGE_SOLENOID_FOWARD_BUTTON_ID = 1;
+	private static final int LARGE_SOLENOID_REVERSE_BUTTON_ID = 2;
 
 
+	@Override
+	public void teleopPeriodic() {
+		/*
+		 * The output of GetRawButton is true/false depending on whether
+		 * the button is pressed; Set takes a boolean for whether
+		 * to use the default (false) channel or the other (true).
+		 *
+		 * In order to set the double solenoid, if just one button
+		 * is pressed, set the solenoid to correspond to that button.
+		 * If both are pressed, set the solenoid will be set to Forwards.
+		 */
+		compressor.setClosedLoopControl(true);
+		if (m_stick.getRawButton(SMALL_SOLENOID_FORWARD_BUTTON_ID)) {
+			m_smallSolenoid.set(DoubleSolenoid.Value.kForward);
+		} else if (m_stick.getRawButton(SMALL_SOLENOID_REVERSE_BUTTON_ID)) {
+			m_smallSolenoid.set(DoubleSolenoid.Value.kReverse);
+		}
 
-  @Override
-  public void teleopPeriodic() {
-    /*
-     * The output of GetRawButton is true/false depending on whether
-     * the button is pressed; Set takes a boolean for whether
-     * to use the default (false) channel or the other (true).
-     *
-     * In order to set the double solenoid, if just one button
-     * is pressed, set the solenoid to correspond to that button.
-     * If both are pressed, set the solenoid will be set to Forwards.
-     */
-    c.setClosedLoopControl(true);
-    if (m_stick.getRawButton(kSolenoidSmallForward)) {
-      m_solenoidSmall.set(DoubleSolenoid.Value.kForward);
-    } else if (m_stick.getRawButton(kSolenoidSmallReverse)) {
-      m_solenoidSmall.set(DoubleSolenoid.Value.kReverse);
-    }
+		if (m_stick.getRawButtonPressed(MEDIUM_SOLENOID_BUTTON_ID)) {
+			m_mediumSolenoid.set(DoubleSolenoid.Value.kForward);
+		} else if (m_stick.getRawButtonReleased(MEDIUM_SOLENOID_BUTTON_ID)){
+			m_mediumSolenoid.set(DoubleSolenoid.Value.kReverse);
+		}
 
-    if (m_stick.getRawButtonPressed(kSolenoidMedium)) {
-      m_solenoidMedium.set(DoubleSolenoid.Value.kForward);
-    } else if (m_stick.getRawButtonReleased(kSolenoidMedium)){
-      m_solenoidMedium.set(DoubleSolenoid.Value.kReverse);
-    }
-
-    if (m_stick.getRawButton(kSolenoidLargeForward)) {
-      m_solenoidLarge.set(DoubleSolenoid.Value.kForward);
-    } else if (m_stick.getRawButton(kSolenoidLargeReverse)) {
-      m_solenoidLarge.set(DoubleSolenoid.Value.kReverse);
-    }
-  }
+		if (m_stick.getRawButton(LARGE_SOLENOID_FOWARD_BUTTON_ID)) {
+			m_largeSolenoid.set(DoubleSolenoid.Value.kForward);
+		} else if (m_stick.getRawButton(LARGE_SOLENOID_REVERSE_BUTTON_ID)) {
+			m_largeSolenoid.set(DoubleSolenoid.Value.kReverse);
+		}
+	}
 }
